@@ -36,7 +36,7 @@ export function popOnce() {
   gold.classList.remove("gold-fly");
   gold.classList.add("is-hidden");
   bomb.classList.add("is-hidden");
-  hit.classList.add("active");
+  hit.classList.add("active"); // CSS에서 .hit.active { pointer-events:auto; }
 
   const r = Math.random();
   const isBomb = r < GAME.bombChance;
@@ -74,6 +74,7 @@ export function popOnce() {
     hit.classList.remove("active");
 
     if (isBomb) {
+      // 💣 폭탄: 점수/콤보 리셋
       GAME.score = 0;
       GAME.combo = 0;
       refs.scoreEl.textContent = 0;
@@ -85,6 +86,7 @@ export function popOnce() {
         scheduleNext(rand(GAME.gap[0], GAME.gap[1]), popOnce);
       }, 450);
     } else if (isGold) {
+      // 🟡 골드: 점수 ×2, 콤보 +1
       GAME.score = GAME.score === 0 ? 2 : GAME.score * 2;
       GAME.combo++;
       refs.scoreEl.textContent = GAME.score;
@@ -99,6 +101,7 @@ export function popOnce() {
         scheduleNext(rand(GAME.gap[0], GAME.gap[1]), popOnce);
       }, 600);
     } else {
+      // 🐹 일반 두더지
       mole.src = ASSETS.moleWow;
       GAME.score++;
       GAME.combo++;
@@ -119,13 +122,15 @@ export function popOnce() {
   GAME.tHide = setTimeout(() => {
     if (!hitOnce) {
       hit.classList.remove("active");
-      if (!isBomb) {
+      // 🔹 요구사항: 폭탄을 "못 눌렀을 때" 콤보 리셋 금지
+      //    → 일반 두더지만 놓치면 콤보 리셋, 골드/폭탄은 유지
+      if (!isBomb && !isGold) {
         GAME.combo = 0;
-        refs.comboEl.textContent = 0;
+        refs.comboEl.textContent = 0; // ✅ refs 사용
         mole && (mole.src = ASSETS.moleSad);
       }
     }
     endRound();
-    scheduleNext(rand(GAME.gap[0], GAME.gap[1]), popOnce);
+    scheduleNext(rand(GAME.gap[0], GAME.gap[1]), popOnce); // ✅ popOnce 인자 추가
   }, upTime);
 }
